@@ -2,7 +2,7 @@ import gradio as gr
 import os
 from dotenv import load_dotenv
 load_dotenv()
-from datetime import datetime
+from datetime import datetime, timezone
 import time
 import logging
 from typing import Dict, Any, List, Tuple
@@ -26,7 +26,7 @@ HF_API_TOKEN = os.environ.get("HF_API_TOKEN", "") or os.environ.get("HF_TOKEN", 
 
 def get_current_datetime():
     """Get the current date and time in UTC format"""
-    return datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+    return datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
 
 def get_current_user():
     """Get the current user login"""
@@ -144,18 +144,16 @@ class LlamaModelWrapper:
             callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
             
             # Set up the model with LangChain HuggingFace integration
-            from langchain_huggingface.chat_models.huggingface import HuggingFaceHub
+            from langchain_huggingface import HuggingFaceEndpoint
             
             # Create the model
-            llm = HuggingFaceHub(
+            llm = HuggingFaceEndpoint(
                 repo_id=self.model_id,
                 huggingfacehub_api_token=HF_API_TOKEN,
-                model_kwargs={
-                    "temperature": 0.7,
-                    "max_new_tokens": 500,
-                    "top_p": 0.9,
-                    "repetition_penalty": 1.1,
-                }
+                temperature=0.7,
+                max_new_tokens=500,
+                top_p=0.9,
+                repetition_penalty=1.1,
             )
             
             return llm
